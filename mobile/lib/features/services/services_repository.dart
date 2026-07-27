@@ -24,6 +24,28 @@ const periodicidadMeses = <String, int>{
 /// Precio sugerido en centavos, para no teclearlo cada vez. Es solo una propuesta.
 const precioSugeridoCents = <String, int>{'tinacos': 70000}; // $700.00 MXN
 
+/// Cómo cierra el certificado, según el trabajo que se hizo.
+///
+/// No puede ser una sola frase para todo: un certificado de impermeabilización que diga
+/// "protocolo de lavado y desinfección" se lee como plantilla mal copiada, y este
+/// documento existe justamente para dar seriedad — hay clientes que lo guardan como
+/// comprobante sanitario.
+const cierreCertificado = <String, String>{
+  'tinacos': 'Servicio realizado conforme a nuestro protocolo de lavado y desinfección.\n'
+      'En Agua Segura cuidamos el agua que su familia utiliza.',
+  'techos': 'Servicio realizado conforme a nuestro protocolo de mantenimiento de techos.\n'
+      'En Agua Segura protegemos el hogar de su familia.',
+  'plomeria': 'Servicio realizado conforme a nuestro protocolo de instalación y '
+      'reparación hidráulica.\n'
+      'En Agua Segura cuidamos el agua que su familia utiliza.',
+  'impermeabilizacion':
+      'Servicio realizado conforme a nuestro protocolo de impermeabilización.\n'
+          'En Agua Segura protegemos el hogar de su familia.',
+  'calentadores': 'Servicio realizado conforme a nuestro protocolo de mantenimiento de '
+      'calentadores solares.\n'
+      'En Agua Segura cuidamos el agua que su familia utiliza.',
+};
+
 /// Calcula cuándo toca repetir un servicio. Devuelve null si no es preventivo.
 ///
 /// Se suma en MESES, no en días: seis meses después del 15 de enero es el 15 de julio.
@@ -153,6 +175,59 @@ class ServicesRepository {
         updatedAt: Value(DateTime.now()),
       ),
     );
+  }
+
+  /// Ajusta cuánto se le cobra a un cliente por un servicio **ya realizado**.
+  ///
+  /// Existe aparte de [completar] porque el cobro se corrige después: el técnico anota
+  /// la visita en la azotea y el dueño acomoda el monto en la noche, cuando hace su
+  /// corte. No se toca la fecha del próximo mantenimiento.
+  Future<void> ajustarCobro(ServiceJob job, {int? priceCents, bool? isPaid}) async {
+    await (_db.update(_db.serviceJobs)..where((j) => j.id.equals(job.id))).write(
+      ServiceJobsCompanion(
+        priceCents: priceCents == null ? const Value.absent() : Value(priceCents),
+        isPaid: isPaid == null ? const Value.absent() : Value(isPaid),
+        version: Value(job.version + 1),
+        updatedAt: Value(DateTime.now()),
+        isDirty: const Value(true),
+      ),
+    );
+  }
+
+  /// **Lo que debe cada cliente**, sumando todos sus servicios sin pagar.
+  ///
+  /// Se agrupa por cliente y no por servicio porque así es como se cobra en la realidad:
+  /// se le habla a la persona, no al trabajo. Si un cliente tiene tres visitas
+  /// pendientes, lo que importa es el total que va a entregar.
+  Future<List<({Client cliente, int total, List<ServiceJob> servicios})>>
+      porCobrarPorCliente() async {
+    final clientes = {for (final c in await _db.activeClients()) c.id: c};
+    final porCliente = <String, List<ServiceJob>>{};
+    for (final j in await _db.activeJobs()) {
+      if (j.status != 'realizado' || j.isPaid) continue;
+      porCliente.putIfAbsent(j.clientId, () => []).add(j);
+    }
+
+    final lista = <({Client cliente, int total, List<ServiceJob> servicios})>[];
+    for (final entrada in porCliente.entries) {
+      final cliente = clientes[entrada.key];
+      if (cliente == null) continue;
+      final total = entrada.value.fold<int>(0, (s, j) => s + j.priceCents);
+      lista.add((cliente: cliente, total: total, servicios: entrada.value));
+    }
+    // El que más debe primero: es a quien conviene cobrarle hoy.
+    lista.sort((a, b) => b.total.compareTo(a.total));
+    return lista;
+  }
+
+  /// Los servicios YA cobrados dentro del rango, para el corte del día.
+  Future<List<ServiceJob>> cobradosEntre(DateTime desde, DateTime hasta) async {
+    final trabajos = await _db.activeJobs();
+    return trabajos.where((j) {
+      if (j.status != 'realizado' || !j.isPaid || j.performedOn == null) return false;
+      final dia = DateTime.parse(j.performedOn!);
+      return !dia.isBefore(_diaCero(desde)) && !dia.isAfter(_diaCero(hasta));
+    }).toList();
   }
 
   Future<void> cancelar(ServiceJob job) async {

@@ -66,13 +66,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _ => 'Caja',
         }),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.workspace_premium),
-            tooltip: 'Planes y activación',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const PricingScreen()),
-            ),
-          ),
+          // La pantalla de planes NO va en la barra: esta app es para llevar el
+          // control del negocio, no para venderle nada a quien la usa. Sigue
+          // accesible desde el aviso que sale si la prueba vence.
           IconButton(icon: const Icon(Icons.sync), tooltip: 'Sincronizar', onPressed: _sync),
           IconButton(
             icon: const Icon(Icons.logout),

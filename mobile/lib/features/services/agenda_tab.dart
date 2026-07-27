@@ -129,9 +129,24 @@ class _RenglonVisita extends ConsumerWidget {
         ],
       ),
       isThreeLine: true,
-      trailing: FilledButton(
-        onPressed: () => _terminar(context, ref),
-        child: const Text('Terminar'),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Avisarle que hoy va el técnico, con la hora que ya quedó agendada.
+          if ((cliente?.phone ?? '').isNotEmpty && visita.scheduledFor != null)
+            IconButton(
+              icon: const Icon(Icons.chat, color: Color(0xFF25D366)),
+              tooltip: 'Avisarle que hoy vamos',
+              onPressed: () => abrirWhatsApp(
+                cliente!.phone,
+                mensajeVisitaDeHoy(cliente!.name, '${hora(visita.scheduledFor!)} hrs'),
+              ),
+            ),
+          FilledButton(
+            onPressed: () => _terminar(context, ref),
+            child: const Text('Terminar'),
+          ),
+        ],
       ),
     );
   }

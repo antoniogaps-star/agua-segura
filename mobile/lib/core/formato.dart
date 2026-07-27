@@ -57,13 +57,33 @@ Future<bool> abrirWhatsApp(String? telefono, String mensaje) async {
   return launchUrl(uri, mode: LaunchMode.externalApplication);
 }
 
+/// El aviso de que hoy le toca su visita, a la hora que ya se acordó con él.
+///
+/// La hora NO la inventa la app: primero se pone de acuerdo con el cliente (por teléfono
+/// o por el mismo WhatsApp) y ya con eso se le manda la confirmación. Un aviso con una
+/// hora que el cliente no aceptó no sirve de nada: nadie va a estar esperando.
+String mensajeVisitaDeHoy(String nombreCliente, String horaAcordada) =>
+    'Hola $nombreCliente, le escribimos de Agua Segura para informarle que hoy '
+    'estaremos con ustedes a las $horaAcordada. ¡Gracias por su confianza!';
+
 /// El mensaje para pedirle a un cliente que los recomiende.
 ///
 /// Se manda JUSTO después del certificado, cuando acaba de ver su tinaco limpio: es el
 /// único momento en que pedir una recomendación no se siente como pedir un favor.
+/// El WhatsApp del negocio, el que se le pasa al vecino que recibe la recomendación.
+///
+/// Va aquí como constante porque hoy la app la usa un solo negocio. Si se le vende a
+/// otro del mismo giro, esto tiene que salir de la ficha de la empresa, no del código.
+const whatsappDelNegocio = '7225910426';
+
+/// Menciona TODOS los servicios a propósito: el vecino que recibe este mensaje quizá no
+/// necesita lavar su tinaco, pero sí impermeabilizar. Si solo se nombra el servicio que
+/// se acaba de hacer, se pierden los otros cuatro.
 String mensajeRecomiendanos(String nombreCliente) =>
     '$nombreCliente, muchas gracias por su confianza. '
     'Si conoce a algún vecino o familiar que necesite lavar su tinaco, '
-    '¿nos recomienda? Le pasamos nuestro contacto para que lo comparta:\n\n'
-    '*Agua Segura* — Lavado y desinfección de tinacos\n'
-    'Hogar protegido, agua segura.';
+    'impermeabilización de azotea, mantenimiento de techos, mantenimiento de '
+    'calentadores solares, instalación o reparación de plomería u otros, '
+    '¿nos recomienda? Le pasamos nuestro contacto para que lo comparta: '
+    'WhatsApp $whatsappDelNegocio\n\n'
+    '*Agua Segura* — Protegemos tu hogar desde lo más alto.';

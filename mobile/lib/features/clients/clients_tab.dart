@@ -127,9 +127,8 @@ class _RenglonCliente extends ConsumerWidget {
           if ((cliente.phone ?? '').isNotEmpty)
             IconButton(
               icon: const Icon(Icons.chat, color: Color(0xFF25D366)),
-              tooltip: 'WhatsApp',
-              onPressed: () => abrirWhatsApp(cliente.phone, 'Hola ${cliente.name}, '
-                  'le escribimos de Agua Segura.'),
+              tooltip: 'Avisarle la hora de la visita',
+              onPressed: () => _avisarVisita(context, cliente),
             ),
           IconButton(
             icon: const Icon(Icons.event_available),
@@ -139,6 +138,28 @@ class _RenglonCliente extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+/// Avisarle al cliente a qué hora llega el técnico hoy.
+///
+/// Pregunta la hora ANTES de abrir WhatsApp porque esa hora ya se acordó con él; la app
+/// solo la escribe bonito. Si mandara una hora inventada, el cliente no estaría esperando
+/// y se perdería el viaje.
+Future<void> _avisarVisita(BuildContext context, Client cliente) async {
+  final hora = await showTimePicker(
+    context: context,
+    initialTime: TimeOfDay.now(),
+    helpText: '¿A qué hora quedaron?',
+    confirmText: 'Avisarle',
+  );
+  if (hora == null || !context.mounted) return;
+
+  final texto = '${hora.hour.toString().padLeft(2, '0')}:'
+      '${hora.minute.toString().padLeft(2, '0')} hrs';
+  final messenger = ScaffoldMessenger.of(context);
+  if (!await abrirWhatsApp(cliente.phone, mensajeVisitaDeHoy(cliente.name, texto))) {
+    messenger.showSnackBar(const SnackBar(content: Text('No se pudo abrir WhatsApp')));
   }
 }
 

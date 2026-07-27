@@ -87,6 +87,10 @@ class _CompletarScreenState extends ConsumerState<CompletarScreen> {
     final servicio = tiposDeServicio[widget.visita.serviceType] ?? widget.visita.serviceType;
     final hoy = DateTime.now();
     final proxima = siguienteFecha(widget.visita.serviceType, hoy);
+    // El cierre cambia según el trabajo: un certificado de impermeabilización no puede
+    // hablar de "lavado y desinfección".
+    final cierre = cierreCertificado[widget.visita.serviceType] ??
+        'En Agua Segura cuidamos el agua que su familia utiliza.';
     return '''
 🧾 *CERTIFICADO DE SERVICIO — Agua Segura*
 
@@ -95,7 +99,7 @@ ${(widget.cliente?.address ?? '').isEmpty ? '' : 'Domicilio: ${widget.cliente!.a
 Fecha: ${fechaLarga(hoy)}
 ${proxima == null ? '' : 'Próximo mantenimiento recomendado: ${fechaLarga(proxima)}\n'}
 Gracias por confiar en nosotros.
-_Hogar protegido, agua segura._'''
+$cierre'''
         .trim();
   }
 
@@ -113,7 +117,7 @@ _Hogar protegido, agua segura._'''
       builder: (ctx) => AlertDialog(
         title: const Text('¿Le pides que los recomiende?'),
         content: Text(
-          'Acaba de ver su tinaco limpio: es el mejor momento. '
+          'Acaba de ver el trabajo terminado: es el mejor momento. '
           'Le mandamos a $nombre un mensaje para que lo comparta con sus vecinos.',
         ),
         actions: [
