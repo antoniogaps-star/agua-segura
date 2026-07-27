@@ -108,6 +108,12 @@ final pendientesProvider = FutureProvider.autoDispose<List<Pendiente>>(
   (ref) => ref.watch(servicesRepositoryProvider).pendientes(),
 );
 
+/// Lo que ya está agendado, para el panorama completo debajo de "¿a quién le toca?".
+final agendadosProvider =
+    FutureProvider.autoDispose<List<({ServiceJob visita, Client cliente})>>(
+  (ref) => ref.watch(servicesRepositoryProvider).agendados(),
+);
+
 /// Corte de caja del día.
 final corteDeHoyProvider =
     FutureProvider.autoDispose<({int cobrado, int porCobrar, int visitas})>((ref) {

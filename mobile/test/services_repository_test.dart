@@ -314,4 +314,37 @@ void main() {
       expect(movida.visita.technicianId, 'luis');
     });
   });
+
+  group('ya agendados', () {
+    test('salen de la más próxima a la más lejana', () async {
+      final a = await clientes.add(name: 'Casa lejana');
+      final b = await clientes.add(name: 'Casa próxima');
+      await servicios.agendar(
+        clientId: a.id,
+        serviceType: 'tinacos',
+        scheduledFor: DateTime(2026, 9, 20, 9),
+      );
+      await servicios.agendar(
+        clientId: b.id,
+        serviceType: 'tinacos',
+        scheduledFor: DateTime(2026, 8, 5, 16),
+      );
+
+      final lista = await servicios.agendados();
+      expect(lista.map((e) => e.cliente.name), ['Casa próxima', 'Casa lejana']);
+    });
+
+    test('lo ya realizado no aparece', () async {
+      final c = await clientes.add(name: 'Casa uno');
+      final v = await servicios.agendar(
+        clientId: c.id,
+        serviceType: 'tinacos',
+        scheduledFor: DateTime(2026, 8, 5, 9),
+      );
+      expect(await servicios.agendados(), hasLength(1));
+
+      await servicios.completar(v.visita, priceCents: 70000, isPaid: true);
+      expect(await servicios.agendados(), isEmpty);
+    });
+  });
 }

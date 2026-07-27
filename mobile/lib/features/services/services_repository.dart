@@ -344,6 +344,33 @@ class ServicesRepository {
     return resultado;
   }
 
+  /// **Lo que ya está agendado**, de la visita más próxima a la más lejana.
+  ///
+  /// Va debajo de "¿a quién le toca?" para completar el panorama: aquella lista dice a
+  /// quién FALTA llamarle, y esta dice qué ya quedó cerrado y con quién. Sin la segunda,
+  /// el dueño no ve de un vistazo cómo viene la semana.
+  Future<List<({ServiceJob visita, Client cliente})>> agendados() async {
+    final clientes = {for (final c in await _db.activeClients()) c.id: c};
+    final lista = <({ServiceJob visita, Client cliente})>[];
+
+    for (final j in await _db.activeJobs()) {
+      if (j.status != 'agendado') continue;
+      final cliente = clientes[j.clientId];
+      if (cliente == null) continue;
+      lista.add((visita: j, cliente: cliente));
+    }
+
+    lista.sort((a, b) {
+      final fa = a.visita.scheduledFor;
+      final fb = b.visita.scheduledFor;
+      // Las que se quedaron sin fecha van al final: son las que hay que acomodar.
+      if (fa == null) return fb == null ? 0 : 1;
+      if (fb == null) return -1;
+      return fa.compareTo(fb);
+    });
+    return lista;
+  }
+
   // ── Corte de caja ────────────────────────────────────────
 
   /// Lo cobrado y lo pendiente de cobro entre dos fechas (inclusive).
