@@ -1,0 +1,56 @@
+[project]
+name = "aguasegura-backend"
+version = "0.0.1"
+description = "Agua Segura — API de lavado de tinacos y mantenimiento, FastAPI + PostgreSQL"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "sqlalchemy>=2.0.36",
+    "asyncpg>=0.30",
+    "alembic>=1.14",
+    "pydantic>=2.10",
+    "pydantic-settings>=2.6",
+    "pyjwt>=2.10",
+    "argon2-cffi>=23.1",
+    "email-validator>=2.2",
+    "python-multipart>=0.0.17",
+    "httpx>=0.28",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.28",
+    "ruff>=0.8",
+    "mypy>=1.13",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
+
+[tool.ruff.lint.per-file-ignores]
+# Las migraciones tienen líneas largas por columna; es idiomático.
+"alembic/versions/*" = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+# Empaquetar solo la app; 'tests' y 'alembic' no son parte del paquete instalable.
+[tool.setuptools.packages.find]
+include = ["app*"]

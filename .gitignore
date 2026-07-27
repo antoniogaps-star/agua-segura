@@ -1,0 +1,49 @@
+# ─── Secretos / entorno ───────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ─── Python / Backend ─────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# ─── Node / Web ───────────────────────────────────────
+node_modules/
+web/dist/
+*.local
+.vite/
+coverage/
+*.tsbuildinfo
+
+# ─── Flutter / Móvil ──────────────────────────────────
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+*.g.dart
+*.freezed.dart
+.packages
+
+# ─── Bases de datos locales ───────────────────────────
+*.sqlite
+*.sqlite3
+*.db
+pgdata/
+
+# ─── Editores / OS ────────────────────────────────────
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+desktop.ini
