@@ -177,4 +177,29 @@ void main() {
       expect(await clientes.recomendadores(), isEmpty);
     });
   });
+
+  group('certificado', () {
+    test('cada servicio tiene su propia frase de respaldo', () {
+      // Si mañana se agrega un servicio y se olvida su frase, el certificado saldría
+      // con un texto genérico. Esta prueba lo caza antes de que le llegue a un cliente.
+      for (final tipo in tiposDeServicio.keys) {
+        expect(
+          protocoloCertificado[tipo],
+          isNotNull,
+          reason: 'falta la frase del certificado para "$tipo"',
+        );
+      }
+    });
+
+    test('la frase de respaldo nombra el trabajo que se hizo', () {
+      expect(protocoloCertificado['impermeabilizacion'], contains('impermeabilización'));
+      expect(protocoloCertificado['tinacos'], contains('desinfección'));
+      // Y nunca al revés: sería una plantilla mal copiada.
+      expect(protocoloCertificado['impermeabilizacion'], isNot(contains('desinfección')));
+    });
+
+    test('la firma es la misma para todos', () {
+      expect(firmaCertificado, contains('seguridad de su familia y patrimonio'));
+    });
+  });
 }

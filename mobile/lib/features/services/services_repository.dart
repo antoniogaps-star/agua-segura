@@ -24,27 +24,31 @@ const periodicidadMeses = <String, int>{
 /// Precio sugerido en centavos, para no teclearlo cada vez. Es solo una propuesta.
 const precioSugeridoCents = <String, int>{'tinacos': 70000}; // $700.00 MXN
 
-/// Cómo cierra el certificado, según el trabajo que se hizo.
+/// La línea de respaldo del certificado: **cambia según el trabajo que se hizo**.
 ///
-/// No puede ser una sola frase para todo: un certificado de impermeabilización que diga
+/// No puede ser una sola para todo: un certificado de impermeabilización que diga
 /// "protocolo de lavado y desinfección" se lee como plantilla mal copiada, y este
 /// documento existe justamente para dar seriedad — hay clientes que lo guardan como
 /// comprobante sanitario.
-const cierreCertificado = <String, String>{
-  'tinacos': 'Servicio realizado conforme a nuestro protocolo de lavado y desinfección.\n'
-      'En Agua Segura cuidamos el agua que su familia utiliza.',
-  'techos': 'Servicio realizado conforme a nuestro protocolo de mantenimiento de techos.\n'
-      'En Agua Segura protegemos el hogar de su familia.',
+const protocoloCertificado = <String, String>{
+  'tinacos': 'Servicio realizado conforme a nuestro protocolo de lavado y desinfección.',
+  'techos': 'Servicio realizado conforme a nuestro protocolo de mantenimiento de techos.',
   'plomeria': 'Servicio realizado conforme a nuestro protocolo de instalación y '
-      'reparación hidráulica.\n'
-      'En Agua Segura cuidamos el agua que su familia utiliza.',
+      'reparación hidráulica.',
   'impermeabilizacion':
-      'Servicio realizado conforme a nuestro protocolo de impermeabilización.\n'
-          'En Agua Segura protegemos el hogar de su familia.',
-  'calentadores': 'Servicio realizado conforme a nuestro protocolo de mantenimiento de '
-      'calentadores solares.\n'
-      'En Agua Segura cuidamos el agua que su familia utiliza.',
+      'Servicio realizado conforme a nuestro protocolo de impermeabilización.',
+  'calentadores':
+      'Servicio realizado conforme a nuestro protocolo de mantenimiento de '
+          'calentadores solares.',
 };
+
+/// La firma del certificado: **es la misma siempre**, sea cual sea el servicio.
+///
+/// A propósito habla de "seguridad" y "patrimonio" y no del agua: así cubre los cinco
+/// trabajos —el agua limpia es salud, y el techo y la azotea son patrimonio— y la marca
+/// dice lo mismo en todos los documentos que salen del negocio.
+const firmaCertificado =
+    'En Agua Segura cuidamos la seguridad de su familia y patrimonio.';
 
 /// Calcula cuándo toca repetir un servicio. Devuelve null si no es preventivo.
 ///
