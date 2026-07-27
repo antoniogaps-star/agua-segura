@@ -21,9 +21,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.clients.models import Client
 from app.modules.services.models import ServiceJob
+from app.modules.users.models import User
 from app.sync.schemas import Change, ChangeResult, PullResponse, PushRequest, PushResponse
 
 SUPPORTED_ENTITIES = {"client", "service_job"}
+
+# El equipo (dueño y técnicos) solo BAJA al móvil: las altas se hacen en /users, no por
+# sincronización, porque hay que fijar la contraseña y validar quién puede crearlas.
 
 
 def _fecha(valor: Any) -> date | None:
@@ -48,6 +52,15 @@ def _client_data(c: Client) -> dict[str, Any]:
         "directions": c.directions,
         "notes": c.notes,
         "referred_by_id": str(c.referred_by_id) if c.referred_by_id else None,
+    }
+
+
+def _user_data(u: User) -> dict[str, Any]:
+    return {
+        "email": u.email,
+        "name": u.name,
+        "role": u.role,
+        "is_active": u.is_active,
     }
 
 
@@ -102,6 +115,18 @@ async def _recomendador(
     if not crudo:
         return None
     quien = await _propia(session, Client, UUID(str(crudo)), tenant_id)
+    return quien.id if quien is not None else None
+
+
+async def _tecnico(session: AsyncSession, crudo: Any, tenant_id: UUID) -> UUID | None:
+    """Valida al técnico asignado: tiene que ser usuario de ESTA empresa.
+
+    Sin esto, un id ajeno dejaría la visita asignada a alguien de otro negocio y el
+    técnico de verdad nunca la vería en su agenda.
+    """
+    if not crudo:
+        return None
+    quien = await _propia(session, User, UUID(str(crudo)), tenant_id)
     return quien.id if quien is not None else None
 
 
@@ -182,9 +207,7 @@ async def _push_job(session: AsyncSession, tenant_id: UUID, ch: Change) -> Chang
                 status=data.get("status", "agendado"),
                 scheduled_for=_momento(data.get("scheduled_for")),
                 performed_on=_fecha(data.get("performed_on")),
-                technician_id=(
-                    UUID(str(data["technician_id"])) if data.get("technician_id") else None
-                ),
+                technician_id=await _tecnico(session, data.get("technician_id"), tenant_id),
                 price_cents=data.get("price_cents", 0),
                 is_paid=data.get("is_paid", False),
                 notes=data.get("notes"),
@@ -214,7 +237,7 @@ async def _push_job(session: AsyncSession, tenant_id: UUID, ch: Change) -> Chang
     if "next_due_on" in data:
         actual.next_due_on = _fecha(data["next_due_on"])
     if "technician_id" in data:
-        actual.technician_id = UUID(str(data["technician_id"])) if data["technician_id"] else None
+        actual.technician_id = await _tecnico(session, data["technician_id"], tenant_id)
     actual.is_deleted = ch.op == "delete"
     actual.version = ch.version
     actual.updated_at = ch.updated_at
@@ -230,6 +253,7 @@ async def pull(session: AsyncSession, tenant_id: UUID, since: str | None) -> Pul
     changes: list[Change] = []
     changes += await _pull(session, "client", Client, _client_data, since_dt, tenant_id)
     changes += await _pull(session, "service_job", ServiceJob, _job_data, since_dt, tenant_id)
+    changes += await _pull(session, "user", User, _user_data, since_dt, tenant_id)
     return PullResponse(changes=changes, cursor=datetime.now(UTC).isoformat())
 
 

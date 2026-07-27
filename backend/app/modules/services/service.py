@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.clients.models import Client
 from app.modules.services.models import PERIODICIDAD_MESES, ServiceJob
+from app.modules.users.models import User
 from app.shared.errors import api_error
 
 
@@ -37,6 +38,28 @@ def siguiente_fecha(service_type: str, desde: date) -> date | None:
     else:
         ultimo = (date(anio, mes + 1, 1) - date.resolution).day
     return date(anio, mes, min(desde.day, ultimo))
+
+
+async def _tecnico_de_la_empresa(
+    session: AsyncSession, technician_id: UUID | None, tenant_id: UUID
+) -> UUID | None:
+    """El técnico asignado tiene que ser usuario de ESTA empresa.
+
+    Si no, la visita quedaría a nombre de alguien de otro negocio y no aparecería en la
+    agenda de nadie.
+    """
+    if technician_id is None:
+        return None
+    rows = await session.execute(
+        select(User).where(
+            User.id == technician_id,
+            User.tenant_id == tenant_id,
+            User.is_deleted.is_(False),
+        )
+    )
+    if rows.scalars().first() is None:
+        raise api_error(404, "TECHNICIAN_NOT_FOUND", "Ese técnico no existe")
+    return technician_id
 
 
 async def get_job(session: AsyncSession, job_id: UUID, tenant_id: UUID) -> ServiceJob | None:
@@ -72,7 +95,7 @@ async def create_job(
         service_type=service_type,
         status="agendado",
         scheduled_for=scheduled_for,
-        technician_id=technician_id,
+        technician_id=await _tecnico_de_la_empresa(session, technician_id, tenant_id),
         notes=notes,
         price_cents=price_cents,
     )
@@ -110,7 +133,7 @@ async def complete_job(
     if notes is not None:
         job.notes = notes
     if technician_id is not None:
-        job.technician_id = technician_id
+        job.technician_id = await _tecnico_de_la_empresa(session, technician_id, tenant_id)
 
     job.next_due_on = siguiente_fecha(job.service_type, job.performed_on)
     job.version += 1

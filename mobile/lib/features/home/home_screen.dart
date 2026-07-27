@@ -6,6 +6,7 @@ import '../../data/sync/sync_service.dart';
 import '../billing/pricing_screen.dart';
 import '../caja/caja_tab.dart';
 import '../clients/clients_tab.dart';
+import '../equipo/equipo_screen.dart';
 import '../pendientes/pendientes_tab.dart';
 import '../services/agenda_tab.dart';
 
@@ -57,6 +58,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // El técnico ve su agenda y sus clientes; la caja es del dueño. La lista de pestañas
+    // se arma según quién entró, para que no exista siquiera la forma de llegar ahí.
+    final soyDueno = ref.watch(soyDuenoProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(switch (_tab) {
@@ -66,9 +71,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _ => 'Caja',
         }),
         actions: [
-          // La pantalla de planes NO va en la barra: esta app es para llevar el
-          // control del negocio, no para venderle nada a quien la usa. Sigue
-          // accesible desde el aviso que sale si la prueba vence.
+          // La pantalla de planes no va en la barra: esta app es para llevar el control
+          // del negocio, no para venderle nada a quien la usa. Sigue accesible desde el
+          // aviso que sale si la prueba vence.
+          if (soyDueno)
+            IconButton(
+              icon: const Icon(Icons.groups_outlined),
+              tooltip: 'Mi equipo',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const EquipoScreen()),
+              ),
+            ),
           IconButton(icon: const Icon(Icons.sync), tooltip: 'Sincronizar', onPressed: _sync),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -79,22 +92,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       body: IndexedStack(
         index: _tab,
-        children: const [PendientesTab(), AgendaTab(), ClientsTab(), CajaTab()],
+        children: [
+          const PendientesTab(),
+          const AgendaTab(),
+          const ClientsTab(),
+          if (soyDueno) const CajaTab(),
+        ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.notifications_active_outlined),
             label: 'Les toca',
           ),
-          NavigationDestination(icon: Icon(Icons.today_outlined), label: 'Hoy'),
-          NavigationDestination(icon: Icon(Icons.people_outline), label: 'Clientes'),
-          NavigationDestination(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            label: 'Caja',
+          const NavigationDestination(icon: Icon(Icons.today_outlined), label: 'Hoy'),
+          const NavigationDestination(
+            icon: Icon(Icons.people_outline),
+            label: 'Clientes',
           ),
+          if (soyDueno)
+            const NavigationDestination(
+              icon: Icon(Icons.account_balance_wallet_outlined),
+              label: 'Caja',
+            ),
         ],
       ),
     );

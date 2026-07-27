@@ -93,10 +93,21 @@ class AuthRepository {
 
   /// Tenant del usuario, leído del JWT guardado. Se usa para etiquetar los
   /// registros locales; el servidor lo reimpone al sincronizar.
-  Future<String> currentTenantId() async {
+  Future<String> currentTenantId() async => await _claim('tenant_id') ?? '';
+
+  /// Quién está usando la app, del propio JWT.
+  Future<String?> currentUserId() async => _claim('sub');
+
+  /// Su rol: "owner"/"admin" ven la caja; "operator" (el técnico) no.
+  ///
+  /// Se lee del token firmado por el servidor y no de una preferencia local: así el rol
+  /// no se puede cambiar desde el celular.
+  Future<String?> currentRole() async => _claim('role');
+
+  Future<String?> _claim(String nombre) async {
     final token = await _store.accessToken ?? await _store.refreshToken;
-    if (token == null) return '';
-    return decodeJwtPayload(token)?['tenant_id'] as String? ?? '';
+    if (token == null) return null;
+    return decodeJwtPayload(token)?[nombre] as String?;
   }
 
   Future<void> _saveTokens(dynamic data) async {

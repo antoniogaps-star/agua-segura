@@ -5,6 +5,7 @@ import '../data/local/database.dart';
 import '../data/sync/sync_service.dart';
 import '../features/auth/auth_repository.dart';
 import '../features/clients/clients_repository.dart';
+import '../features/equipo/equipo_repository.dart';
 import '../features/services/services_repository.dart';
 import 'api_client.dart';
 import 'secure_store.dart';
@@ -51,6 +52,36 @@ final recomendadoresProvider =
   (ref) => ref.watch(clientsRepositoryProvider).recomendadores(),
 );
 
+// ── Equipo (dueño y técnicos) ────────────────────────────────
+final equipoRepositoryProvider = Provider<EquipoRepository>(
+  (ref) => EquipoRepository(ref.watch(databaseProvider), ref.watch(dioProvider)),
+);
+
+final equipoProvider = FutureProvider.autoDispose<List<TeamMember>>(
+  (ref) => ref.watch(equipoRepositoryProvider).list(),
+);
+
+final tecnicosProvider = FutureProvider.autoDispose<List<TeamMember>>(
+  (ref) => ref.watch(equipoRepositoryProvider).tecnicos(),
+);
+
+/// Quién está usando la app: de aquí sale si ve la caja o solo su agenda.
+final miUsuarioProvider = FutureProvider<({String id, String rol})?>((ref) async {
+  final repo = ref.watch(authRepositoryProvider);
+  final id = await repo.currentUserId();
+  final rol = await repo.currentRole();
+  if (id == null || rol == null) return null;
+  return (id: id, rol: rol);
+});
+
+/// El dueño ve todo; el técnico solo su agenda y sus servicios.
+final soyDuenoProvider = Provider<bool>((ref) {
+  final yo = ref.watch(miUsuarioProvider).valueOrNull;
+  // Mientras carga se asume técnico: es lo más restrictivo, y así la caja no alcanza a
+  // parpadear en la pantalla de alguien que no debe verla.
+  return yo != null && (yo.rol == 'owner' || yo.rol == 'admin');
+});
+
 // ── Servicios ────────────────────────────────────────────────
 final servicesRepositoryProvider = Provider<ServicesRepository>(
   (ref) => ServicesRepository(
@@ -59,10 +90,18 @@ final servicesRepositoryProvider = Provider<ServicesRepository>(
   ),
 );
 
-/// La agenda de hoy: qué visitas hay y a quién le tocan.
-final agendaHoyProvider = FutureProvider.autoDispose<List<ServiceJob>>(
-  (ref) => ref.watch(servicesRepositoryProvider).agendaDe(DateTime.now()),
-);
+/// La agenda de hoy.
+///
+/// El dueño ve TODAS las visitas del día; el técnico solo las suyas. Así no tiene que
+/// buscar las propias entre las de sus compañeros mientras maneja.
+final agendaHoyProvider = FutureProvider.autoDispose<List<ServiceJob>>((ref) async {
+  final yo = await ref.watch(miUsuarioProvider.future);
+  final esDueno = yo != null && (yo.rol == 'owner' || yo.rol == 'admin');
+  return ref.watch(servicesRepositoryProvider).agendaDe(
+        DateTime.now(),
+        soloDelTecnico: esDueno ? null : yo?.id,
+      );
+});
 
 /// ¿A quién le toca? — la pantalla estrella.
 final pendientesProvider = FutureProvider.autoDispose<List<Pendiente>>(

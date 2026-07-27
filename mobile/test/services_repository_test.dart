@@ -268,4 +268,50 @@ void main() {
       expect(segunda.visita.id, isNot(primera.visita.id));
     });
   });
+
+  group('técnicos', () {
+    test('el técnico ve solo sus visitas del día', () async {
+      final c1 = await clientes.add(name: 'Casa uno');
+      final c2 = await clientes.add(name: 'Casa dos');
+      final hoy = DateTime.now();
+      final aLas9 = DateTime(hoy.year, hoy.month, hoy.day, 9);
+      final aLas11 = DateTime(hoy.year, hoy.month, hoy.day, 11);
+
+      await servicios.agendar(
+        clientId: c1.id,
+        serviceType: 'tinacos',
+        scheduledFor: aLas9,
+        technicianId: 'luis',
+      );
+      await servicios.agendar(
+        clientId: c2.id,
+        serviceType: 'tinacos',
+        scheduledFor: aLas11,
+        technicianId: 'miguel',
+      );
+
+      // El dueño ve las dos; cada técnico solo la suya.
+      expect(await servicios.agendaDe(hoy), hasLength(2));
+      final deLuis = await servicios.agendaDe(hoy, soloDelTecnico: 'luis');
+      expect(deLuis.single.clientId, c1.id);
+      final deMiguel = await servicios.agendaDe(hoy, soloDelTecnico: 'miguel');
+      expect(deMiguel.single.clientId, c2.id);
+    });
+
+    test('reprogramar conserva al técnico si no se manda otro', () async {
+      final c = await clientes.add(name: 'Casa uno');
+      await servicios.agendar(
+        clientId: c.id,
+        serviceType: 'tinacos',
+        scheduledFor: DateTime(2026, 8, 10, 9),
+        technicianId: 'luis',
+      );
+      final movida = await servicios.agendar(
+        clientId: c.id,
+        serviceType: 'tinacos',
+        scheduledFor: DateTime(2026, 8, 11, 9),
+      );
+      expect(movida.visita.technicianId, 'luis');
+    });
+  });
 }

@@ -42,6 +42,24 @@ class Clients extends Table with _SyncColumns {
   Set<Column> get primaryKey => {id};
 }
 
+/// El equipo: el dueño y sus técnicos.
+///
+/// Solo BAJA del servidor (las altas se hacen contra la API, que fija la contraseña).
+/// Se guarda aquí para que la agenda pueda decir "le toca a Luis" en una azotea sin
+/// señal, que es justo donde el técnico la va a leer.
+class TeamMembers extends Table {
+  TextColumn get id => text()();
+  TextColumn get tenantId => text()();
+  TextColumn get email => text()();
+  TextColumn get name => text().nullable()();
+  TextColumn get role => text()(); // 'owner' | 'admin' | 'operator' | 'viewer'
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Visita de servicio: agendada o ya realizada. Es una sola ficha con estado, porque en
 /// la vida real la visita agendada *se convierte* en el servicio realizado.
 class ServiceJobs extends Table with _SyncColumns {
@@ -75,7 +93,7 @@ class ServiceJobs extends Table with _SyncColumns {
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [Clients, ServiceJobs])
+@DriftDatabase(tables: [Clients, ServiceJobs, TeamMembers])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? NativeDatabase.memory());
   AppDatabase.encrypted(SecureStore store) : super(_openEncrypted(store));
@@ -94,6 +112,16 @@ class AppDatabase extends _$AppDatabase {
 
   Future<Client?> clientById(String id) =>
       (select(clients)..where((c) => c.id.equals(id))).getSingleOrNull();
+
+  // ── Equipo ─────────────────────────────────────────────────
+  Future<List<TeamMember>> activeTeam() => (select(teamMembers)
+        ..where((t) => t.isDeleted.equals(false) & t.isActive.equals(true))
+        ..orderBy([(t) => OrderingTerm(expression: t.name)]))
+      .get();
+
+  /// Solo los técnicos, que son a quienes se les asignan las visitas.
+  Future<List<TeamMember>> technicians() async =>
+      (await activeTeam()).where((t) => t.role == 'operator').toList();
 
   // ── Servicios ──────────────────────────────────────────────
   Future<List<ServiceJob>> activeJobs() => (select(serviceJobs)

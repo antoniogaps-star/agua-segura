@@ -13,6 +13,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, SyncMixin, UUIDPrimaryKeyMixin
 
+# "operator" es el TÉCNICO: ve su agenda del día y registra el servicio, pero no la caja.
 ROLES = ("owner", "admin", "operator", "viewer")
 
 
@@ -27,6 +28,9 @@ class User(UUIDPrimaryKeyMixin, SyncMixin, Base):
         ForeignKey("tenants.id", ondelete="CASCADE"), index=True, nullable=False
     )
     email: Mapped[str] = mapped_column(CITEXT, nullable=False)
+    # Cómo se le dice: "Luis", "Don Miguel". El correo es para entrar; esto es lo que
+    # aparece en la agenda cuando se ve quién va a hacer el trabajo.
+    name: Mapped[str | None] = mapped_column(String(120), nullable=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[str] = mapped_column(String(20), default="operator", server_default="operator")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")

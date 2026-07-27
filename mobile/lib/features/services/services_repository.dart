@@ -104,13 +104,17 @@ class ServicesRepository {
   Future<List<ServiceJob>> ofClient(String clientId) => _db.jobsOfClient(clientId);
 
   /// La agenda de un día: las visitas planeadas para esa fecha.
-  Future<List<ServiceJob>> agendaDe(DateTime dia) async {
+  ///
+  /// Con [soloDelTecnico] se acota a las de una persona: es lo que ve el técnico al
+  /// abrir la app, sin la carga de trabajo de los demás encima.
+  Future<List<ServiceJob>> agendaDe(DateTime dia, {String? soloDelTecnico}) async {
     final todos = await _db.activeJobs();
     return todos
         .where((j) =>
             j.status == 'agendado' &&
             j.scheduledFor != null &&
-            _mismoDia(j.scheduledFor!, dia))
+            _mismoDia(j.scheduledFor!, dia) &&
+            (soloDelTecnico == null || j.technicianId == soloDelTecnico))
         .toList();
   }
 
@@ -129,6 +133,7 @@ class ServicesRepository {
     DateTime? scheduledFor,
     String? notes,
     int? priceCents,
+    String? technicianId,
   }) async {
     final yaAgendada = (await _db.activeJobs()).where(
       (j) =>
@@ -144,6 +149,8 @@ class ServicesRepository {
           scheduledFor: Value(scheduledFor),
           notes: notes == null ? const Value.absent() : Value(notes),
           priceCents: priceCents == null ? const Value.absent() : Value(priceCents),
+          technicianId:
+              technicianId == null ? const Value.absent() : Value(technicianId),
           version: Value(previa.version + 1),
           updatedAt: Value(DateTime.now()),
           isDirty: const Value(true),
@@ -167,6 +174,7 @@ class ServicesRepository {
             scheduledFor: Value(scheduledFor),
             notes: Value(notes),
             priceCents: Value(priceCents ?? precioSugeridoCents[serviceType] ?? 0),
+            technicianId: Value(technicianId),
           ),
         );
     final nueva =

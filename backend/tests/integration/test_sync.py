@@ -83,8 +83,12 @@ async def test_pull_devuelve_cursor() -> None:
         r = await client.get("/api/v1/sync/pull", headers={"Authorization": f"Bearer {token}"})
     assert r.status_code == 200
     body = r.json()
-    assert body["changes"] == []
     assert isinstance(body["cursor"], str)
+
+    # Sin clientes ni servicios todavía. Lo único que baja es el equipo: el dueño recién
+    # registrado, para que el móvil pueda mostrar nombres sin internet.
+    assert [c["entity"] for c in body["changes"]] == ["user"]
+    assert body["changes"][0]["data"]["role"] == "owner"
 
 
 async def test_cliente_y_servicio_suben_y_bajan() -> None:

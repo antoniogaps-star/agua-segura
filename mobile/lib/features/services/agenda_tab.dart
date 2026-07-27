@@ -64,12 +64,17 @@ class AgendaTab extends ConsumerWidget {
           final porId = {
             for (final c in clientes.valueOrNull ?? const <Client>[]) c.id: c,
           };
+          final equipo = {
+            for (final t in ref.watch(equipoProvider).valueOrNull ?? const <TeamMember>[])
+              t.id: t,
+          };
           return ListView.builder(
             padding: const EdgeInsets.only(top: 6, bottom: 24),
             itemCount: visitas.length,
             itemBuilder: (_, i) => _RenglonVisita(
               visita: visitas[i],
               cliente: porId[visitas[i].clientId],
+              tecnico: equipo[visitas[i].technicianId],
             ),
           );
         },
@@ -79,10 +84,15 @@ class AgendaTab extends ConsumerWidget {
 }
 
 class _RenglonVisita extends ConsumerWidget {
-  const _RenglonVisita({required this.visita, required this.cliente});
+  const _RenglonVisita({
+    required this.visita,
+    required this.cliente,
+    required this.tecnico,
+  });
 
   final ServiceJob visita;
   final Client? cliente;
+  final TeamMember? tecnico;
 
   /// Cancelar la visita: el cliente no estaba, la pospuso, o quedó duplicada.
   ///
@@ -195,6 +205,26 @@ class _RenglonVisita extends ConsumerWidget {
                           cliente!.address!,
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
+                      // Quién la va a hacer: sin esto, dos técnicos podrían presentarse
+                      // en la misma casa, o ninguno.
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.engineering_outlined, size: 15),
+                            const SizedBox(width: 4),
+                            Text(
+                              tecnico?.name ?? tecnico?.email ?? 'Sin asignar',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: tecnico == null
+                                    ? Theme.of(context).colorScheme.error
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       if (referencias.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 4),

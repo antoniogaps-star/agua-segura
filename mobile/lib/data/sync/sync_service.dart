@@ -132,6 +132,21 @@ class SyncService {
                 isDirty: const Value(false),
               ),
             );
+      case 'user':
+        // El equipo solo BAJA: las altas se hacen contra /users, porque hay que fijar
+        // la contraseña y comprobar quién tiene permiso. Aquí se guarda para que la
+        // agenda pueda decir "le toca a Luis" en una azotea sin señal.
+        await _db.into(_db.teamMembers).insertOnConflictUpdate(
+              TeamMembersCompanion.insert(
+                id: id,
+                tenantId: tenantId,
+                email: data['email'] as String? ?? '',
+                name: Value(data['name'] as String?),
+                role: data['role'] as String? ?? 'operator',
+                isActive: Value(data['is_active'] as bool? ?? true),
+                isDeleted: Value(deleted),
+              ),
+            );
       case 'service_job':
         // Las fotos viven solo aquí: si el servidor pisara la fila sin ellas, el técnico
         // perdería el antes y el después que acaba de tomar. Se conservan a mano.

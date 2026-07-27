@@ -29,6 +29,7 @@ class _ContratarScreenState extends ConsumerState<ContratarScreen> {
     text: ((precioSugeridoCents['tinacos'] ?? 0) / 100).toStringAsFixed(2),
   );
   final _notas = TextEditingController();
+  String? _tecnicoId;
   bool _guardando = false;
 
   @override
@@ -73,6 +74,7 @@ class _ContratarScreenState extends ConsumerState<ContratarScreen> {
           serviceType: _tipo,
           scheduledFor: cuando,
           priceCents: _centavos,
+          technicianId: _tecnicoId,
           notes: _notas.text.trim().isEmpty ? null : _notas.text.trim(),
         );
 
@@ -168,6 +170,13 @@ class _ContratarScreenState extends ConsumerState<ContratarScreen> {
             ),
           ),
           const SizedBox(height: 12),
+          // A quién le toca hacerlo. Si no se elige, la visita queda sin asignar y el
+          // dueño la reparte después desde la agenda.
+          _SelectorTecnico(
+            actual: _tecnicoId,
+            onCambio: (id) => setState(() => _tecnicoId = id),
+          ),
+          const SizedBox(height: 12),
           TextField(
             controller: _notas,
             maxLines: 2,
@@ -186,6 +195,39 @@ class _ContratarScreenState extends ConsumerState<ContratarScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// "¿Quién lo va a hacer?" — se elige de entre los técnicos dados de alta.
+///
+/// Si el negocio todavía no tiene técnicos, no se muestra nada: sería una pregunta sin
+/// respuestas posibles.
+class _SelectorTecnico extends ConsumerWidget {
+  const _SelectorTecnico({required this.actual, required this.onCambio});
+
+  final String? actual;
+  final ValueChanged<String?> onCambio;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tecnicos = ref.watch(tecnicosProvider).valueOrNull ?? const <TeamMember>[];
+    if (tecnicos.isEmpty) return const SizedBox.shrink();
+
+    return DropdownButtonFormField<String?>(
+      initialValue: actual,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: '¿Quién lo va a hacer?',
+        helperText: 'Lo verá en su agenda del día',
+        border: OutlineInputBorder(),
+      ),
+      items: [
+        const DropdownMenuItem<String?>(value: null, child: Text('Sin asignar')),
+        for (final t in tecnicos)
+          DropdownMenuItem<String?>(value: t.id, child: Text(t.name ?? t.email)),
+      ],
+      onChanged: onCambio,
     );
   }
 }
