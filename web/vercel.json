@@ -1,4 +1,16 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/app",
+      "destination": "https://github.com/antoniogaps-star/agua-segura/releases/latest/download/agua-segura.apk",
+      "permanent": false
+    },
+    {
+      "source": "/descargar",
+      "destination": "https://github.com/antoniogaps-star/agua-segura/releases/latest/download/agua-segura.apk",
+      "permanent": false
+    }
+  ],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

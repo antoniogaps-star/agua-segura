@@ -1,8 +1,14 @@
 import { Link } from "react-router-dom";
 
-/** Enlace estable a la última versión del APK (el workflow lo sube con nombre fijo). */
-const APK_URL =
-  "https://github.com/antoniogaps-star/agua-segura/releases/latest/download/agua-segura.apk";
+/**
+ * Enlace CORTO de descarga: `agua-segura.vercel.app/app`.
+ *
+ * Es una redirección (ver `vercel.json`) hacia la última versión del APK en GitHub. Se
+ * usa el corto y no el de GitHub porque este se dicta por teléfono sin equivocarse, cabe
+ * en un volante y hace un QR más simple de escanear. Y si mañana el archivo cambia de
+ * lugar, se cambia la redirección y los volantes ya impresos siguen funcionando.
+ */
+const APK_URL = "/app";
 
 /** La app descargable es solo Android; iPhone/computadora usan el panel web. */
 const isIOS =

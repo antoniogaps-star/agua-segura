@@ -66,6 +66,7 @@ flutter test
 
 ## APK
 
-Lo compila GitHub Actions en cada cambio de `mobile/` y queda con enlace fijo:
+Lo compila GitHub Actions en cada cambio de `mobile/`. Para compartirlo se usa el enlace
+corto, que redirige a la última versión (ver `web/vercel.json`):
 
-`https://github.com/antoniogaps-star/agua-segura/releases/latest/download/agua-segura.apk`
+`https://agua-segura.vercel.app/app`

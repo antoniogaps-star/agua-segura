@@ -26,7 +26,17 @@ enlace fijo que nunca cambia:
 
 `https://github.com/antoniogaps-star/agua-segura/releases/latest/download/agua-segura.apk`
 
-Ese es el enlace que usa la landing y el código QR.
+Para compartirlo con la gente **no se usa ese enlace**, sino el corto:
+
+`https://agua-segura.vercel.app/app`
+
+Es una redirección definida en `web/vercel.json`. Se hizo así por tres razones: se dicta
+por teléfono sin equivocarse, hace un código QR más simple de escanear, y si algún día el
+archivo cambia de nombre o de lugar basta con cambiar la redirección — los volantes ya
+impresos siguen funcionando.
+
+La redirección es **temporal (307), no permanente**, a propósito: una permanente se queda
+guardada en el navegador de la gente y ya no habría forma de corregirla.
 
 ---
 
