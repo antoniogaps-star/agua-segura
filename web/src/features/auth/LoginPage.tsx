@@ -34,7 +34,7 @@ export function LoginPage() {
     <div className="center">
       <form className="card" onSubmit={onSubmit}>
         <h1>Agua Segura · Entrar</h1>
-        <p className="slogan">Hogar protegido, agua segura</p>
+        <p className="slogan">Protegemos tu hogar desde lo más alto</p>
 
         <label htmlFor="company_slug">Tu negocio</label>
         <input

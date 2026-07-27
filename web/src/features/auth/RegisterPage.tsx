@@ -37,7 +37,7 @@ export function RegisterPage() {
     <div className="center">
       <form className="card" onSubmit={onSubmit} autoComplete="off">
         <h1>Agua Segura · Crear cuenta</h1>
-        <p className="slogan">Hogar protegido, agua segura</p>
+        <p className="slogan">Protegemos tu hogar desde lo más alto</p>
 
         <label htmlFor="company_name">Nombre de tu negocio</label>
         <input

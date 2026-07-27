@@ -103,7 +103,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             const SizedBox(height: 4),
             const Text(
-              'Hogar protegido, agua segura',
+              'Protegemos tu hogar desde lo más alto',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

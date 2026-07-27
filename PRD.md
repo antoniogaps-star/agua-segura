@@ -2,7 +2,7 @@
 
 *26 jul 2026 · para aprobación de Toño*
 
-> **Hogar protegido, agua segura.**
+> **Protegemos tu hogar desde lo más alto.**
 > *Confianza que se ve, protección que se siente.*
 
 ---

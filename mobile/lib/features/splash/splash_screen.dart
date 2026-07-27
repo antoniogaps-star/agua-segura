@@ -24,13 +24,20 @@ class SplashScreen extends StatelessWidget {
               fit: BoxFit.contain,
             ),
             const SizedBox(height: 22),
-            const Text(
-              'HOGAR PROTEGIDO, AGUA SEGURA',
-              style: TextStyle(
-                color: Color(0xFF5EB2FF),
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.5,
+            // Con margen y centrado: el eslogan es largo y en pantallas angostas
+            // se saldría en una sola línea.
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 28),
+              child: Text(
+                'PROTEGEMOS TU HOGAR\nDESDE LO MÁS ALTO',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF5EB2FF),
+                  fontSize: 15,
+                  height: 1.6,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                ),
               ),
             ),
           ],

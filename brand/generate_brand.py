@@ -143,12 +143,10 @@ def hacer_splash(ancho: int = 1242, alto: int = 2208) -> Image.Image:
         draw.text(((ancho - (caja[2] - caja[0])) / 2, y), texto, font=f, fill=color)
 
     centrado("Agua Segura", int(alto * 0.53), fuente(int(ancho * 0.115)), BLANCO)
-    centrado(
-        "HOGAR PROTEGIDO, AGUA SEGURA",
-        int(alto * 0.605),
-        fuente(int(ancho * 0.028)),
-        AZUL_CLARO,
-    )
+    # El eslogan va en dos renglones: en una sola línea quedaría diminuto para caber.
+    chica = fuente(int(ancho * 0.032))
+    centrado("PROTEGEMOS TU HOGAR", int(alto * 0.605), chica, AZUL_CLARO)
+    centrado("DESDE LO MÁS ALTO", int(alto * 0.635), chica, AZUL_CLARO)
     return fondo
 
 

@@ -29,7 +29,7 @@ export function LandingPage() {
           style={{ width: "min(280px, 64vw)", height: "auto", margin: "0 auto 0.5rem" }}
         />
         <p className="landing-slogan" style={{ color: AZUL_CLARO, marginTop: 0 }}>
-          Hogar protegido, agua segura
+          Protegemos tu hogar desde lo más alto
         </p>
         <p className="landing-lead" style={{ color: "#cbd5e1" }}>
           <strong>Deja de perder clientes por olvido.</strong> La app te dice cada mañana a
@@ -197,7 +197,7 @@ export function LandingPage() {
         >
           🍎💻 En el navegador
         </Link>
-        <p>Agua Segura · Hogar protegido, agua segura</p>
+        <p>Agua Segura · Protegemos tu hogar desde lo más alto</p>
       </footer>
     </div>
   );
