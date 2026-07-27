@@ -42,6 +42,7 @@ class SyncService {
             'address': c.address,
             'directions': c.directions,
             'notes': c.notes,
+            'referred_by_id': c.referredById,
           },
         },
       for (final j in trabajos)
@@ -126,6 +127,7 @@ class SyncService {
                 address: Value(data['address'] as String?),
                 directions: Value(data['directions'] as String?),
                 notes: Value(data['notes'] as String?),
+                referredById: Value(data['referred_by_id'] as String?),
                 isDeleted: Value(deleted),
                 isDirty: const Value(false),
               ),

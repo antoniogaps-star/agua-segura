@@ -158,4 +158,23 @@ void main() {
       expect(fila.isDirty, isTrue);
     });
   });
+
+  group('recomendaciones', () {
+    test('quien más recomienda va primero', () async {
+      final estrella = await clientes.add(name: 'Sra. Martínez');
+      final otro = await clientes.add(name: 'Sr. Ramírez');
+      await clientes.add(name: 'Vecina 1', referredById: estrella.id);
+      await clientes.add(name: 'Vecina 2', referredById: estrella.id);
+      await clientes.add(name: 'Compadre', referredById: otro.id);
+
+      final lista = await clientes.recomendadores();
+      expect(lista.map((r) => r.cliente.name), ['Sra. Martínez', 'Sr. Ramírez']);
+      expect(lista.first.recomendados, 2);
+    });
+
+    test('quien no ha recomendado a nadie no aparece', () async {
+      await clientes.add(name: 'Nadie lo mandó');
+      expect(await clientes.recomendadores(), isEmpty);
+    });
+  });
 }

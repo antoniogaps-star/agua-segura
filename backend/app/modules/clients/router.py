@@ -1,5 +1,6 @@
 """Endpoints REST de clientes."""
 
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
@@ -7,7 +8,12 @@ from fastapi import APIRouter, Depends, status
 from app.modules.billing.deps import require_active_subscription
 from app.modules.clients import service
 from app.modules.clients.models import Client
-from app.modules.clients.schemas import ClientCreate, ClientRead, ClientUpdate
+from app.modules.clients.schemas import (
+    ClientCreate,
+    ClientRead,
+    ClientUpdate,
+    Recomendador,
+)
 from app.shared.deps import Claims, TenantSession
 
 router = APIRouter(
@@ -32,7 +38,18 @@ async def create_client(data: ClientCreate, session: TenantSession, claims: Clai
         address=data.address,
         directions=data.directions,
         notes=data.notes,
+        referred_by_id=data.referred_by_id,
     )
+
+
+@router.get("/recomendadores", response_model=list[Recomendador])
+async def recomendadores(session: TenantSession, claims: Claims) -> list[dict[str, Any]]:
+    """**Quién te trae clientes** — de más recomendados a menos.
+
+    Los clientes de este negocio llegan por recomendación: esta lista dice a quién
+    agradecerle y a quién volver a pedirle.
+    """
+    return await service.recomendadores(session, UUID(claims["tenant_id"]))
 
 
 @router.patch("/{client_id}", response_model=ClientRead)

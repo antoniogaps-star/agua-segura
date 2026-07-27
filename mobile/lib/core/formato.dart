@@ -56,3 +56,14 @@ Future<bool> abrirWhatsApp(String? telefono, String mensaje) async {
   final uri = Uri.parse('https://wa.me/$numero?text=${Uri.encodeComponent(mensaje)}');
   return launchUrl(uri, mode: LaunchMode.externalApplication);
 }
+
+/// El mensaje para pedirle a un cliente que los recomiende.
+///
+/// Se manda JUSTO después del certificado, cuando acaba de ver su tinaco limpio: es el
+/// único momento en que pedir una recomendación no se siente como pedir un favor.
+String mensajeRecomiendanos(String nombreCliente) =>
+    '$nombreCliente, muchas gracias por su confianza. '
+    'Si conoce a algún vecino o familiar que necesite lavar su tinaco, '
+    '¿nos recomienda? Le pasamos nuestro contacto para que lo comparta:\n\n'
+    '*Agua Segura* — Lavado y desinfección de tinacos\n'
+    'Hogar protegido, agua segura.';

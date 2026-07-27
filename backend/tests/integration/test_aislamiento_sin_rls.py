@@ -211,3 +211,36 @@ async def test_el_push_no_borra_el_servicio_de_otro(dos_negocios, owner_sessions
     async with owner_sessions() as s:
         vivos = await services.list_jobs(s, empresa_a)
     assert len(vivos) == 1
+
+
+async def test_no_se_puede_marcar_como_recomendador_a_un_cliente_ajeno(
+    dos_negocios, owner_sessions
+) -> None:
+    """B da de alta a alguien diciendo que lo recomendó un cliente de A.
+
+    Si se aceptara, la lista de "quién te trae clientes" de B apuntaría a alguien de la
+    cartera de A — y eso es filtrar información entre empresas.
+    """
+    _, empresa_b, id_de_a = dos_negocios
+    async with owner_sessions() as s:
+        nuevo = await clients.create_client(
+            s, tenant_id=empresa_b, name="Vecino", referred_by_id=id_de_a
+        )
+        await s.commit()
+        assert nuevo.referred_by_id is None
+
+
+async def test_recomendadores_no_mezcla_empresas(dos_negocios, owner_sessions) -> None:
+    empresa_a, empresa_b, id_de_a = dos_negocios
+    async with owner_sessions() as s:
+        await clients.create_client(
+            s, tenant_id=empresa_a, name="Vecina de la Sra.", referred_by_id=id_de_a
+        )
+        await s.commit()
+
+    async with owner_sessions() as s:
+        de_a = await clients.recomendadores(s, empresa_a)
+        de_b = await clients.recomendadores(s, empresa_b)
+
+    assert [(r["name"], r["recomendados"]) for r in de_a] == [("Sra. Martínez", 1)]
+    assert de_b == []

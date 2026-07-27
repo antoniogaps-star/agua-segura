@@ -20,6 +20,7 @@ class ClientsRepository {
     String? address,
     String? directions,
     String? notes,
+    String? referredById,
   }) async {
     final tenantId = await _getTenantId();
     final id = _uuid.v7();
@@ -32,6 +33,7 @@ class ClientsRepository {
             address: Value(address),
             directions: Value(directions),
             notes: Value(notes),
+            referredById: Value(referredById),
           ),
         );
     return (await _db.clientById(id))!;
@@ -45,6 +47,7 @@ class ClientsRepository {
     String? address,
     String? directions,
     String? notes,
+    String? referredById,
   }) async {
     await (_db.update(_db.clients)..where((t) => t.id.equals(c.id))).write(
       ClientsCompanion(
@@ -53,11 +56,32 @@ class ClientsRepository {
         address: Value(address),
         directions: Value(directions),
         notes: Value(notes),
+        referredById: Value(referredById),
         version: Value(c.version + 1),
         updatedAt: Value(DateTime.now()),
         isDirty: const Value(true),
       ),
     );
+  }
+
+  /// **Quién te trae clientes**: los que han recomendado a alguien, de más a menos.
+  ///
+  /// La pantalla de "a quién le toca" trae de vuelta a los de siempre; esto dice a quién
+  /// agradecerle —y a quién volver a pedirle— los nuevos.
+  Future<List<({Client cliente, int recomendados})>> recomendadores() async {
+    final todos = await _db.activeClients();
+    final cuenta = <String, int>{};
+    for (final c in todos) {
+      if (c.referredById != null) {
+        cuenta[c.referredById!] = (cuenta[c.referredById!] ?? 0) + 1;
+      }
+    }
+    final lista = [
+      for (final c in todos)
+        if (cuenta[c.id] != null) (cliente: c, recomendados: cuenta[c.id]!),
+    ];
+    lista.sort((a, b) => b.recomendados.compareTo(a.recomendados));
+    return lista;
   }
 
   /// Borrado suave (tombstone): el servidor y los demás celulares necesitan enterarse

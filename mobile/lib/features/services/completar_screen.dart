@@ -99,6 +99,40 @@ _Hogar protegido, agua segura._'''
         .trim();
   }
 
+  /// Ofrece pedirle al cliente que los recomiende, con el mensaje ya escrito.
+  ///
+  /// Va aquí y no en otro lado porque el momento importa: pedirlo la semana siguiente,
+  /// en frío, es pedir un favor; pedirlo ahora es aprovechar que está contento.
+  Future<void> _ofrecerPedirRecomendacion() async {
+    final nombre = widget.cliente?.name;
+    final telefono = widget.cliente?.phone;
+    if (nombre == null || (telefono ?? '').isEmpty) return;
+
+    final quiere = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('¿Le pides que los recomiende?'),
+        content: Text(
+          'Acaba de ver su tinaco limpio: es el mejor momento. '
+          'Le mandamos a $nombre un mensaje para que lo comparta con sus vecinos.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Ahora no'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sí, pedirle'),
+          ),
+        ],
+      ),
+    );
+    if (quiere ?? false) {
+      await abrirWhatsApp(telefono, mensajeRecomiendanos(nombre));
+    }
+  }
+
   Future<void> _guardar({required bool compartir}) async {
     setState(() => _guardando = true);
     try {
@@ -117,6 +151,8 @@ _Hogar protegido, agua segura._'''
           if (_despues != null) XFile(_despues!),
         ];
         await Share.shareXFiles(fotos, text: _certificado());
+        // Acaba de ver su tinaco limpio: es EL momento de pedir la recomendación.
+        if (mounted) await _ofrecerPedirRecomendacion();
       }
       if (mounted) Navigator.of(context).pop(true);
     } finally {

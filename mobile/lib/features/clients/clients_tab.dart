@@ -45,9 +45,11 @@ class ClientsTab extends ConsumerWidget {
             }
             return ListView.separated(
               padding: const EdgeInsets.only(bottom: 88),
-              itemCount: lista.length,
+              // +1 por la tarjeta de "quién te trae clientes", que va hasta arriba.
+              itemCount: lista.length + 1,
               separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (_, i) => _RenglonCliente(lista[i]),
+              itemBuilder: (_, i) =>
+                  i == 0 ? const _QuienTraeClientes() : _RenglonCliente(lista[i - 1]),
             );
           },
         ),
@@ -167,6 +169,7 @@ class _EditorClienteState extends ConsumerState<_EditorCliente> {
   late final _direccion = TextEditingController(text: widget.cliente?.address ?? '');
   late final _referencias = TextEditingController(text: widget.cliente?.directions ?? '');
   late final _notas = TextEditingController(text: widget.cliente?.notes ?? '');
+  late String? _recomendadoPor = widget.cliente?.referredById;
   bool _guardando = false;
 
   @override
@@ -197,6 +200,7 @@ class _EditorClienteState extends ConsumerState<_EditorCliente> {
         address: oNulo(_direccion),
         directions: oNulo(_referencias),
         notes: oNulo(_notas),
+        referredById: _recomendadoPor,
       );
     } else {
       await repo.update(
@@ -206,8 +210,10 @@ class _EditorClienteState extends ConsumerState<_EditorCliente> {
         address: oNulo(_direccion),
         directions: oNulo(_referencias),
         notes: oNulo(_notas),
+        referredById: _recomendadoPor,
       );
     }
+    ref.invalidate(recomendadoresProvider);
     if (mounted) Navigator.of(context).pop(true);
   }
 
@@ -266,6 +272,14 @@ class _EditorClienteState extends ConsumerState<_EditorCliente> {
               border: OutlineInputBorder(),
             ),
           ),
+          const SizedBox(height: 12),
+          // Saber de dónde vino cada cliente es lo que permite pedirle otra
+          // recomendación a quien ya trajo trabajo.
+          _SelectorRecomendador(
+            actual: _recomendadoPor,
+            excluir: widget.cliente?.id,
+            onCambio: (id) => setState(() => _recomendadoPor = id),
+          ),
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _guardando ? null : _guardar,
@@ -273,6 +287,104 @@ class _EditorClienteState extends ConsumerState<_EditorCliente> {
             child: const Text('Guardar'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// "¿Quién lo recomendó?" — se elige de entre los clientes que ya existen.
+class _SelectorRecomendador extends ConsumerWidget {
+  const _SelectorRecomendador({
+    required this.actual,
+    required this.excluir,
+    required this.onCambio,
+  });
+
+  final String? actual;
+
+  /// El propio cliente que se está editando: nadie se recomienda a sí mismo.
+  final String? excluir;
+  final ValueChanged<String?> onCambio;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final clientes = ref.watch(clientsProvider).valueOrNull ?? const <Client>[];
+    final opciones = clientes.where((c) => c.id != excluir).toList();
+    if (opciones.isEmpty) return const SizedBox.shrink();
+
+    return DropdownButtonFormField<String?>(
+      initialValue: actual,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: '¿Quién lo recomendó?',
+        helperText: 'Así sabes a quién agradecerle',
+        border: OutlineInputBorder(),
+      ),
+      items: [
+        const DropdownMenuItem<String?>(value: null, child: Text('Nadie / llegó solo')),
+        for (final c in opciones)
+          DropdownMenuItem<String?>(value: c.id, child: Text(c.name)),
+      ],
+      onChanged: onCambio,
+    );
+  }
+}
+
+/// **Quién te trae clientes.** Va arriba de la lista, con los tres que más han
+/// recomendado: son a los que conviene volver a pedirles.
+class _QuienTraeClientes extends ConsumerWidget {
+  const _QuienTraeClientes();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lista = ref.watch(recomendadoresProvider).valueOrNull ?? const [];
+    if (lista.isEmpty) return const SizedBox.shrink();
+
+    return Card(
+      margin: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.volunteer_activism_outlined, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Quién te trae clientes',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            for (final r in lista.take(3))
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  children: [
+                    Expanded(child: Text(r.cliente.name)),
+                    Text(
+                      r.recomendados == 1
+                          ? '1 recomendado'
+                          : '${r.recomendados} recomendados',
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.chat, size: 18, color: Color(0xFF25D366)),
+                      tooltip: 'Agradecerle y pedirle otra',
+                      onPressed: () => abrirWhatsApp(
+                        r.cliente.phone,
+                        mensajeRecomiendanos(r.cliente.name),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

@@ -45,6 +45,12 @@ final clientsProvider = FutureProvider.autoDispose<List<Client>>(
   (ref) => ref.watch(clientsRepositoryProvider).list(),
 );
 
+/// Quién te trae clientes: los que han recomendado a alguien.
+final recomendadoresProvider =
+    FutureProvider.autoDispose<List<({Client cliente, int recomendados})>>(
+  (ref) => ref.watch(clientsRepositoryProvider).recomendadores(),
+);
+
 // ── Servicios ────────────────────────────────────────────────
 final servicesRepositoryProvider = Provider<ServicesRepository>(
   (ref) => ServicesRepository(

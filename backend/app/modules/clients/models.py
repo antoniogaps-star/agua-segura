@@ -27,3 +27,11 @@ class Client(UUIDPrimaryKeyMixin, SyncMixin, Base):
     # necesita más que la dirección formal.
     directions: Mapped[str | None] = mapped_column(Text, nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # Quién lo recomendó. Los clientes llegan por recomendación, así que saber de dónde
+    # vino cada uno dice a quién hay que agradecerle — y a quién pedirle la siguiente.
+    # Se apunta a otro cliente de la misma empresa; SET NULL para que borrar al que
+    # recomendó no se lleve al recomendado.
+    referred_by_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("clients.id", ondelete="SET NULL"), nullable=True
+    )

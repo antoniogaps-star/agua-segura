@@ -13,6 +13,8 @@ class ClientCreate(BaseModel):
     # Cómo llegar: el técnico las necesita más que la calle y el número.
     directions: str | None = None
     notes: str | None = None
+    # Quién lo recomendó (otro cliente).
+    referred_by_id: UUID | None = None
 
 
 class ClientUpdate(BaseModel):
@@ -27,6 +29,7 @@ class ClientUpdate(BaseModel):
     address: str | None = None
     directions: str | None = None
     notes: str | None = None
+    referred_by_id: UUID | None = None
 
 
 class ClientRead(BaseModel):
@@ -38,3 +41,13 @@ class ClientRead(BaseModel):
     address: str | None
     directions: str | None
     notes: str | None
+    referred_by_id: UUID | None
+
+
+class Recomendador(BaseModel):
+    """Un cliente que ha traído a otros. Sale de la pantalla "quién te trae clientes"."""
+
+    client_id: UUID
+    name: str
+    phone: str | None
+    recomendados: int

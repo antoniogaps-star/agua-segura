@@ -47,6 +47,7 @@ def _client_data(c: Client) -> dict[str, Any]:
         "address": c.address,
         "directions": c.directions,
         "notes": c.notes,
+        "referred_by_id": str(c.referred_by_id) if c.referred_by_id else None,
     }
 
 
@@ -89,6 +90,21 @@ async def _de_otra_empresa(
     return rows.first() is not None
 
 
+async def _recomendador(
+    session: AsyncSession, data: dict[str, Any], tenant_id: UUID
+) -> UUID | None:
+    """Valida a quién recomendó: tiene que ser cliente de esta empresa.
+
+    Sin esta comprobación, un id ajeno quedaría guardado como referencia y la lista de
+    "quién te trae clientes" apuntaría a alguien de otra cartera.
+    """
+    crudo = data.get("referred_by_id")
+    if not crudo:
+        return None
+    quien = await _propia(session, Client, UUID(str(crudo)), tenant_id)
+    return quien.id if quien is not None else None
+
+
 # ── PUSH ─────────────────────────────────────────────────────
 async def push(session: AsyncSession, tenant_id: UUID, payload: PushRequest) -> PushResponse:
     results: list[ChangeResult] = []
@@ -118,6 +134,8 @@ async def _push_client(session: AsyncSession, tenant_id: UUID, ch: Change) -> Ch
                 address=data.get("address"),
                 directions=data.get("directions"),
                 notes=data.get("notes"),
+                # Solo se acepta si quien recomendó ya existe en ESTA empresa.
+                referred_by_id=await _recomendador(session, data, tenant_id),
                 is_deleted=(ch.op == "delete"),
                 version=ch.version,
                 updated_at=ch.updated_at,
@@ -134,6 +152,8 @@ async def _push_client(session: AsyncSession, tenant_id: UUID, ch: Change) -> Ch
     for campo in ("name", "phone", "address", "directions", "notes"):
         if campo in data:
             setattr(actual, campo, data[campo])
+    if "referred_by_id" in data:
+        actual.referred_by_id = await _recomendador(session, data, tenant_id)
     actual.is_deleted = ch.op == "delete"
     actual.version = ch.version
     actual.updated_at = ch.updated_at

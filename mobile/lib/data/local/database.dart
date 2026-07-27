@@ -34,6 +34,10 @@ class Clients extends Table with _SyncColumns {
   TextColumn get directions => text().nullable()();
   TextColumn get notes => text().nullable()();
 
+  /// El id del cliente que lo recomendó. Los clientes llegan por recomendación, así que
+  /// esto dice a quién agradecerle — y a quién volver a pedirle.
+  TextColumn get referredById => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
