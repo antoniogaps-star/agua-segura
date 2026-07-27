@@ -1,0 +1,202 @@
+:root {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f5f6f8;
+  color: #1a1a1a;
+}
+
+.center {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+  width: 100%;
+  max-width: 380px;
+}
+
+.card h1 {
+  margin: 0 0 1.5rem;
+  font-size: 1.4rem;
+}
+
+label {
+  display: block;
+  margin: 0.75rem 0 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #d0d3d9;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+button {
+  width: 100%;
+  margin-top: 1.25rem;
+  padding: 0.7rem;
+  border: 0;
+  border-radius: 8px;
+  background: #1C74D9;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #c0392b;
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+/* Eslogan de marca */
+.slogan {
+  margin: -0.9rem 0 1.25rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #011829;
+}
+
+/* ── Landing de venta ────────────────────────────────── */
+.landing { max-width: 760px; margin: 0 auto; padding: 0 1rem 3rem; }
+.landing-hero { text-align: center; padding: 2.5rem 1rem 2rem; }
+.landing-brand { font-size: 2.6rem; color: #1C74D9; margin: 0; }
+.landing-slogan { font-size: 1.15rem; font-weight: 600; color: #011829; margin: 0.25rem 0 1.25rem; }
+.landing-lead { font-size: 1.05rem; line-height: 1.6; color: #333; max-width: 520px; margin: 0 auto 1.5rem; }
+.landing-cta { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+.landing-btn {
+  display: inline-block;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  width: auto;
+}
+.landing-btn-primary { background: #1C74D9; color: #fff; }
+.landing-btn-ghost { background: transparent; color: #1C74D9; border: 1px solid #1C74D9; }
+.landing-note { font-size: 0.85rem; color: #777; margin-top: 0.9rem; }
+
+.landing-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 2.5rem;
+}
+.landing-feature {
+  background: #fff;
+  border: 0.5px solid #e6e8eb;
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+}
+.landing-emoji { font-size: 1.8rem; }
+.landing-feature h3 { font-size: 1rem; margin: 0.5rem 0 0.35rem; }
+.landing-feature p { font-size: 0.9rem; color: #555; margin: 0; line-height: 1.5; }
+
+.landing-steps { text-align: center; margin-bottom: 2.5rem; }
+.landing-steps h2 { font-size: 1.3rem; }
+.landing-steps ol { display: inline-block; text-align: left; font-size: 1.05rem; line-height: 2; color: #333; }
+
+.landing-foot { text-align: center; }
+.landing-foot p { font-size: 0.85rem; color: #999; margin-top: 1rem; }
+
+/* Navegación en pantallas chicas: marca+usuario arriba, pestañas deslizables abajo */
+@media (max-width: 640px) {
+  .topnav {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.6rem 0.9rem;
+  }
+  .navuser { margin-left: auto; }
+  .navuser span { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .navlinks {
+    order: 3;
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .navlinks a { white-space: nowrap; }
+}
+
+.secondary {
+  background: transparent;
+  color: #1C74D9;
+}
+
+/* ── Navegación / layout ─────────────────────────────── */
+.topnav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #fff;
+  border-bottom: 1px solid #e6e8eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.brand { font-weight: 700; }
+.navlinks { display: flex; gap: 0.5rem; flex: 1; flex-wrap: wrap; }
+.navlinks a {
+  text-decoration: none;
+  color: #555;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+}
+.navlinks a.active { color: #1C74D9; background: #e7f1fd; font-weight: 600; }
+.navuser { display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; color: #555; }
+.linkbtn {
+  width: auto;
+  margin: 0;
+  background: transparent;
+  color: #1C74D9;
+  padding: 0.3rem 0.6rem;
+}
+.content { max-width: 900px; margin: 1.5rem auto; padding: 0 1rem; }
+.page > h1 { font-size: 1.4rem; margin-top: 0; }
+.page h2 { font-size: 1.05rem; }
+
+/* Tarjetas de módulo (más anchas que el login) */
+.content .card { max-width: 100%; margin-bottom: 1.5rem; }
+
+/* Formularios en fila */
+.row { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.row input, .row select { flex: 1; min-width: 120px; margin: 0; }
+.row button { width: auto; margin: 0; }
+
+/* Tablas */
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid #f0f0f0; }
+th { font-size: 0.85rem; color: #666; }
+.empty { color: #888; padding: 1rem 0; }
+
+/* Tarjetas de estadística (reportes) */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+.stat { background: #fff; border-radius: 10px; padding: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+.stat .value { font-size: 1.6rem; font-weight: 700; }
+.stat .label { font-size: 0.8rem; color: #777; }

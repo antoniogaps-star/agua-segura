@@ -138,7 +138,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
             TextField(
               controller: _company,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Empresa'),
+              decoration: const InputDecoration(labelText: 'Tu negocio'),
             ),
             const SizedBox(height: 8),
             TextField(

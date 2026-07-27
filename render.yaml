@@ -1,0 +1,39 @@
+# Blueprint de Render para la API de Agua Segura (capa gratuita).
+#
+# La base de datos vive en Neon (Postgres gratis): DATABASE_URL se pega a mano en
+# el panel de Render usando la URL **CON `-pooler`** (la directa no conecta desde
+# Render). El código traduce `sslmode`/`channel_binding` y desactiva la caché de
+# sentencias preparadas cuando detecta el pooler.
+services:
+  - type: web
+    name: aguasegura-api
+    runtime: python
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: pip install -e .
+    # Las migraciones corren en cada arranque: con FORCE ROW LEVEL SECURITY el
+    # mismo rol sirve para migrar y para la app.
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      # Se pega a mano desde Neon (la URL con `-pooler`).
+      - key: DATABASE_URL
+        sync: false
+      # Clave fuerte generada por Render (>= 32 caracteres).
+      - key: JWT_SECRET
+        generateValue: true
+      # Secreto para generar claves de activación. Ponle un valor que recuerdes;
+      # tiene prioridad sobre lo bootstrappeado en la base.
+      - key: LICENSE_ADMIN_SECRET
+        sync: false
+      # El dominio del panel web en Vercel. Sin esto el panel no puede hablar
+      # con la API desde el navegador.
+      - key: CORS_ORIGINS
+        value: "https://agua-segura.vercel.app,http://localhost:5175"

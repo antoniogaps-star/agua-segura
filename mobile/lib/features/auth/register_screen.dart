@@ -99,7 +99,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                'Crear empresa',
+                'Crear cuenta',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold),
@@ -120,7 +120,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               controller: _companyName,
               textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(
-                labelText: 'Nombre de la empresa',
+                labelText: 'Nombre de tu negocio',
                 hintText: 'Ej: Modelorama Toño',
               ),
             ),

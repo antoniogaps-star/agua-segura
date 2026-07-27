@@ -81,7 +81,7 @@ class _QuickLoginScreenState extends ConsumerState<QuickLoginScreen> {
               const Text('Agua Segura',
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1C74D9))),
               const SizedBox(height: 16),
-              Text('Empresa: ${widget.company}',
+              Text('Negocio: ${widget.company}',
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               Text(widget.email, style: const TextStyle(color: Colors.grey)),
               const SizedBox(height: 24),

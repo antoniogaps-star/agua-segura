@@ -55,7 +55,7 @@ class _RootGateState extends State<_RootGate> {
 /// - Con sesión (real o demo): la app (Home).
 /// - Sin sesión y con una cuenta ya guardada en el equipo: "Entrar" (verde),
 ///   solo pide la contraseña.
-/// - Sin sesión y sin cuenta guardada (primera vez): "Crear empresa" (naranja).
+/// - Sin sesión y sin cuenta guardada (primera vez): "Crear cuenta" (naranja).
 class _AuthGate extends ConsumerWidget {
   const _AuthGate();
 
@@ -73,7 +73,7 @@ class _AuthGate extends ConsumerWidget {
     );
   }
 
-  /// Elige entre "Entrar" (cuenta guardada) y "Crear empresa" (primera vez).
+  /// Elige entre "Entrar" (cuenta guardada) y "Crear cuenta" (primera vez).
   Widget _firstScreen(WidgetRef ref) {
     final saved = ref.watch(savedAccountProvider);
     return saved.when(

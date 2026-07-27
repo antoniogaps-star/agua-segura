@@ -115,7 +115,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               controller: _company,
               textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(
-                labelText: 'Empresa',
+                labelText: 'Tu negocio',
                 hintText: 'El nombre de tu negocio',
               ),
             ),
@@ -166,7 +166,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           builder: (_) => const RegisterScreen(),
                         ),
                       ),
-              child: const Text('¿No tienes cuenta? Crear empresa'),
+              child: const Text('¿No tienes cuenta? Crear cuenta'),
             ),
             TextButton(
               onPressed: _loading

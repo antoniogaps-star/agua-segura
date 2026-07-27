@@ -47,3 +47,9 @@ pgdata/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Artefactos de compilación de TypeScript
+*.tsbuildinfo
+
+# Configuración local del entorno de desarrollo
+.claude/
