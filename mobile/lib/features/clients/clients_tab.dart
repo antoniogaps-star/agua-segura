@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/formato.dart';
 import '../../core/providers.dart';
 import '../../data/local/database.dart';
+import '../services/agendar_visita.dart';
+import '../services/contratar_screen.dart';
 import '../services/services_repository.dart';
 
 /// Los clientes del negocio. Llegan por recomendación, uno por uno, así que cada ficha
@@ -68,6 +70,7 @@ class _RenglonCliente extends ConsumerWidget {
 
   final Client cliente;
 
+  /// Elegir el servicio y luego agendarlo (el ayudante pregunta día y hora).
   Future<void> _agendar(BuildContext context, WidgetRef ref) async {
     final tipo = await showModalBottomSheet<String>(
       context: context,
@@ -86,23 +89,7 @@ class _RenglonCliente extends ConsumerWidget {
       ),
     );
     if (tipo == null || !context.mounted) return;
-
-    final cuando = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now().subtract(const Duration(days: 1)),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      helpText: 'Fecha de la visita',
-    );
-    if (cuando == null) return;
-
-    await ref.read(servicesRepositoryProvider).agendar(
-          clientId: cliente.id,
-          serviceType: tipo,
-          scheduledFor: cuando,
-        );
-    ref.invalidate(agendaHoyProvider);
-    ref.invalidate(pendientesProvider);
+    await agendarVisita(context, ref, clientId: cliente.id, serviceType: tipo);
   }
 
   @override
@@ -134,6 +121,18 @@ class _RenglonCliente extends ConsumerWidget {
             icon: const Icon(Icons.event_available),
             tooltip: 'Agendar visita',
             onPressed: () => _agendar(context, ref),
+          ),
+          // Contratar: cerrar un trabajo nuevo con su precio. Es por donde entra el
+          // primer servicio de un cliente, que nunca aparece en "¿A quién le toca?".
+          IconButton(
+            icon: const Icon(Icons.handshake_outlined),
+            tooltip: 'Contratar un servicio',
+            onPressed: () async {
+              final listo = await Navigator.of(context).push<bool>(
+                MaterialPageRoute(builder: (_) => ContratarScreen(cliente: cliente)),
+              );
+              if (listo ?? false) ref.invalidate(clientsProvider);
+            },
           ),
         ],
       ),

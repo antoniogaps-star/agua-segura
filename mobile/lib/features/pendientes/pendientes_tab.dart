@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/formato.dart';
 import '../../core/providers.dart';
+import '../services/agendar_visita.dart';
 import '../services/services_repository.dart';
 
 /// **¿A QUIÉN LE TOCA?** — la pantalla estrella.
@@ -88,25 +89,6 @@ class _RenglonPendiente extends ConsumerWidget {
     }
   }
 
-  Future<void> _agendar(BuildContext context, WidgetRef ref) async {
-    final cuando = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now().subtract(const Duration(days: 1)),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      helpText: 'Fecha de la visita',
-    );
-    if (cuando == null) return;
-
-    await ref.read(servicesRepositoryProvider).agendar(
-          clientId: p.cliente.id,
-          serviceType: p.tipo,
-          scheduledFor: cuando,
-        );
-    ref.invalidate(pendientesProvider);
-    ref.invalidate(agendaHoyProvider);
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final color = _color(context);
@@ -150,7 +132,12 @@ class _RenglonPendiente extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.event_available),
             tooltip: 'Agendar la visita',
-            onPressed: () => _agendar(context, ref),
+            onPressed: () => agendarVisita(
+              context,
+              ref,
+              clientId: p.cliente.id,
+              serviceType: p.tipo,
+            ),
           ),
         ],
       ),

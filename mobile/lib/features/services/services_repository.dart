@@ -114,12 +114,47 @@ class ServicesRepository {
         .toList();
   }
 
-  Future<ServiceJob> agendar({
+  /// Agenda una visita, o **reprograma la que ya había**.
+  ///
+  /// Un cliente no puede tener dos visitas abiertas del mismo servicio: no existe "ir a
+  /// impermeabilizarle la azotea dos veces el martes". Si ya hay una agendada, se le
+  /// cambia la fecha en vez de crear otra — antes se duplicaban en la agenda del técnico
+  /// y no había cómo distinguir cuál era la buena.
+  ///
+  /// Devuelve la visita y si [reprogramada] es true, para que la pantalla pueda decir
+  /// "se cambió la fecha" en vez de "se agendó".
+  Future<({ServiceJob visita, bool reprogramada})> agendar({
     required String clientId,
     required String serviceType,
     DateTime? scheduledFor,
     String? notes,
+    int? priceCents,
   }) async {
+    final yaAgendada = (await _db.activeJobs()).where(
+      (j) =>
+          j.clientId == clientId &&
+          j.serviceType == serviceType &&
+          j.status == 'agendado',
+    );
+
+    if (yaAgendada.isNotEmpty) {
+      final previa = yaAgendada.first;
+      await (_db.update(_db.serviceJobs)..where((j) => j.id.equals(previa.id))).write(
+        ServiceJobsCompanion(
+          scheduledFor: Value(scheduledFor),
+          notes: notes == null ? const Value.absent() : Value(notes),
+          priceCents: priceCents == null ? const Value.absent() : Value(priceCents),
+          version: Value(previa.version + 1),
+          updatedAt: Value(DateTime.now()),
+          isDirty: const Value(true),
+        ),
+      );
+      final actualizada =
+          await (_db.select(_db.serviceJobs)..where((j) => j.id.equals(previa.id)))
+              .getSingle();
+      return (visita: actualizada, reprogramada: true);
+    }
+
     final tenantId = await _getTenantId();
     final id = _uuid.v7();
     await _db.into(_db.serviceJobs).insert(
@@ -131,10 +166,12 @@ class ServicesRepository {
             status: const Value('agendado'),
             scheduledFor: Value(scheduledFor),
             notes: Value(notes),
-            priceCents: Value(precioSugeridoCents[serviceType] ?? 0),
+            priceCents: Value(priceCents ?? precioSugeridoCents[serviceType] ?? 0),
           ),
         );
-    return (_db.select(_db.serviceJobs)..where((j) => j.id.equals(id))).getSingle();
+    final nueva =
+        await (_db.select(_db.serviceJobs)..where((j) => j.id.equals(id))).getSingle();
+    return (visita: nueva, reprogramada: false);
   }
 
   /// Marca el servicio como realizado y programa el siguiente **solo**.

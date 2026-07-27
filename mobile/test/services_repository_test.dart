@@ -43,10 +43,11 @@ void main() {
   group('¿a quién le toca?', () {
     test('al terminar, la próxima fecha se anota sola', () async {
       final cliente = await clientes.add(name: 'Sra. Martínez');
-      final visita = await servicios.agendar(
+      final agendada = await servicios.agendar(
         clientId: cliente.id,
         serviceType: 'tinacos',
       );
+      final visita = agendada.visita;
 
       await servicios.completar(
         visita,
@@ -64,7 +65,8 @@ void main() {
 
     test('aparece quien ya se pasó de la fecha', () async {
       final cliente = await clientes.add(name: 'Sra. Martínez');
-      final visita = await servicios.agendar(clientId: cliente.id, serviceType: 'tinacos');
+      final visita =
+          (await servicios.agendar(clientId: cliente.id, serviceType: 'tinacos')).visita;
       // Hace un año: se pasó por mucho de los seis meses.
       await servicios.completar(
         visita,
@@ -81,7 +83,8 @@ void main() {
 
     test('no aparece quien todavía no le toca', () async {
       final cliente = await clientes.add(name: 'Sr. Ramírez');
-      final visita = await servicios.agendar(clientId: cliente.id, serviceType: 'tinacos');
+      final visita =
+          (await servicios.agendar(clientId: cliente.id, serviceType: 'tinacos')).visita;
       // Ayer: le toca hasta dentro de seis meses.
       await servicios.completar(
         visita,
@@ -95,7 +98,8 @@ void main() {
 
     test('no se le recuerda a quien ya tiene visita agendada', () async {
       final cliente = await clientes.add(name: 'Depto. Las Flores');
-      final visita = await servicios.agendar(clientId: cliente.id, serviceType: 'tinacos');
+      final visita =
+          (await servicios.agendar(clientId: cliente.id, serviceType: 'tinacos')).visita;
       await servicios.completar(
         visita,
         priceCents: 70000,
@@ -112,7 +116,7 @@ void main() {
     test('lo más vencido va primero', () async {
       Future<void> servicioHace(String nombre, int dias) async {
         final c = await clientes.add(name: nombre);
-        final v = await servicios.agendar(clientId: c.id, serviceType: 'tinacos');
+        final v = (await servicios.agendar(clientId: c.id, serviceType: 'tinacos')).visita;
         await servicios.completar(
           v,
           priceCents: 70000,
@@ -135,9 +139,9 @@ void main() {
       final a = await clientes.add(name: 'Pagó');
       final b = await clientes.add(name: 'Quedó a deber');
 
-      final v1 = await servicios.agendar(clientId: a.id, serviceType: 'tinacos');
+      final v1 = (await servicios.agendar(clientId: a.id, serviceType: 'tinacos')).visita;
       await servicios.completar(v1, priceCents: 70000, isPaid: true, performedOn: hoy);
-      final v2 = await servicios.agendar(clientId: b.id, serviceType: 'techos');
+      final v2 = (await servicios.agendar(clientId: b.id, serviceType: 'techos')).visita;
       await servicios.completar(v2, priceCents: 120000, isPaid: false, performedOn: hoy);
 
       final corte = await servicios.corte(hoy, hoy);
@@ -200,6 +204,68 @@ void main() {
 
     test('la firma es la misma para todos', () {
       expect(firmaCertificado, contains('seguridad de su familia y patrimonio'));
+    });
+  });
+
+  group('agendar', () {
+    test('no se duplica: agendar dos veces reprograma la misma visita', () async {
+      final c = await clientes.add(name: 'Toño Solano');
+      final primera = await servicios.agendar(
+        clientId: c.id,
+        serviceType: 'impermeabilizacion',
+        scheduledFor: DateTime(2026, 8, 10, 9),
+      );
+      final segunda = await servicios.agendar(
+        clientId: c.id,
+        serviceType: 'impermeabilizacion',
+        scheduledFor: DateTime(2026, 8, 12, 16),
+      );
+
+      expect(primera.reprogramada, isFalse);
+      expect(segunda.reprogramada, isTrue, reason: 'debió reprogramar, no crear otra');
+      expect(segunda.visita.id, primera.visita.id);
+
+      // Y en la agenda del técnico aparece UNA sola vez.
+      final agenda = await servicios.agendaDe(DateTime(2026, 8, 12));
+      expect(agenda, hasLength(1));
+      expect(agenda.single.scheduledFor, DateTime(2026, 8, 12, 16));
+    });
+
+    test('servicios distintos del mismo cliente sí conviven', () async {
+      final c = await clientes.add(name: 'Toño Solano');
+      await servicios.agendar(
+        clientId: c.id,
+        serviceType: 'tinacos',
+        scheduledFor: DateTime(2026, 8, 10, 9),
+      );
+      final otra = await servicios.agendar(
+        clientId: c.id,
+        serviceType: 'techos',
+        scheduledFor: DateTime(2026, 8, 10, 12),
+      );
+
+      expect(otra.reprogramada, isFalse);
+      expect(await servicios.agendaDe(DateTime(2026, 8, 10)), hasLength(2));
+    });
+
+    test('la hora acordada se guarda tal cual', () async {
+      final c = await clientes.add(name: 'Toño Solano');
+      final r = await servicios.agendar(
+        clientId: c.id,
+        serviceType: 'tinacos',
+        scheduledFor: DateTime(2026, 8, 10, 14, 30),
+      );
+      expect(r.visita.scheduledFor, DateTime(2026, 8, 10, 14, 30));
+    });
+
+    test('una visita cancelada deja agendar de nuevo', () async {
+      final c = await clientes.add(name: 'Toño Solano');
+      final primera = await servicios.agendar(clientId: c.id, serviceType: 'tinacos');
+      await servicios.cancelar(primera.visita);
+
+      final segunda = await servicios.agendar(clientId: c.id, serviceType: 'tinacos');
+      expect(segunda.reprogramada, isFalse);
+      expect(segunda.visita.id, isNot(primera.visita.id));
     });
   });
 }
