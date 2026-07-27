@@ -52,7 +52,7 @@ PERIODICIDAD_MESES: dict[str, int] = {
 # de 450, ni una azotea chica que una grande.
 # Lo que NO aparece aquí se cotiza cada vez (0 = sin sugerencia).
 PRECIO_SUGERIDO_CENTS: dict[str, int] = {
-    "tinacos": 50_000,  # $500.00 MXN
+    "tinacos": 70_000,  # $700.00 MXN
 }
 
 

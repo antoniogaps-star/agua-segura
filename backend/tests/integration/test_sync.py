@@ -110,7 +110,7 @@ async def test_cliente_y_servicio_suben_y_bajan() -> None:
                             "service_type": "tinacos",
                             "status": "realizado",
                             "performed_on": "2026-07-23",
-                            "price_cents": 50000,
+                            "price_cents": 70000,
                             "is_paid": True,
                             "next_due_on": "2027-01-23",
                             "notes": "Tinaco de 1100 L",
@@ -128,7 +128,7 @@ async def test_cliente_y_servicio_suben_y_bajan() -> None:
     cambios = {c["entity"]: c for c in pull.json()["changes"]}
     assert cambios["client"]["data"]["directions"] == "Portón verde, junto a la tienda"
     servicio = cambios["service_job"]["data"]
-    assert servicio["price_cents"] == 50000
+    assert servicio["price_cents"] == 70000
     assert servicio["is_paid"] is True
     # La fecha del próximo lavado es lo que alimenta "¿a quién le toca?".
     assert servicio["next_due_on"] == "2027-01-23"

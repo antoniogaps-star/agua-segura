@@ -1,0 +1,57 @@
+name: agua_segura_mobile
+description: "Agua Segura — App del negocio de lavado de tinacos y mantenimiento, offline-first (Flutter + SQLite)."
+publish_to: "none"
+version: 0.0.1+1
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Base local cifrada (SQLCipher)
+  drift: ^2.21.0
+  sqlcipher_flutter_libs: ^0.6.4
+  sqlite3: ^2.4.6
+  # Estado / DI
+  flutter_riverpod: ^2.6.1
+  # Modelos inmutables
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+  # Red
+  dio: ^5.7.0
+  # Seguridad e identificadores
+  flutter_secure_storage: ^9.2.2
+  uuid: ^4.5.1
+  path_provider: ^2.1.5
+  # Fotos del antes y el después: se toman en la azotea y se quedan en el celular.
+  image_picker: ^1.1.2
+  # Abrir WhatsApp con el recordatorio ya escrito, y el teléfono del cliente.
+  url_launcher: ^6.3.0
+  # Compartir el certificado de servicio.
+  share_plus: ^10.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.13
+  drift_dev: ^2.21.0
+  freezed: ^2.5.7
+  json_serializable: ^6.9.0
+  mockito: ^5.4.4
+  flutter_launcher_icons: ^0.14.1
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/branding/icon_master.png"
+  # El azul marino de la insignia.
+  adaptive_icon_background: "#011829"
+  adaptive_icon_foreground: "assets/branding/logo_mark.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/branding/logo.png
+    - assets/branding/logo_mark.png

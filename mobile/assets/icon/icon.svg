@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" rx="230" fill="#2F6DF6"/>
+
+  <!-- Alas de la A (izquierda) -->
+  <path d="M295,330 Q200,308 128,352" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round" fill="none"/>
+  <path d="M288,380 Q210,370 152,406" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round" fill="none"/>
+  <path d="M284,428 Q226,426 184,456" stroke="#FFFFFF" stroke-width="22" stroke-linecap="round" fill="none"/>
+
+  <!-- Letra A -->
+  <polygon points="316,270 372,270 240,768 184,768" fill="#FFFFFF"/>
+  <polygon points="316,270 372,270 504,768 448,768" fill="#FFFFFF"/>
+  <rect x="262" y="580" width="164" height="52" fill="#FFFFFF"/>
+
+  <!-- Micrófono (misma altura que la A → juntos se leen "AI") -->
+  <rect x="640" y="270" width="160" height="300" rx="80" fill="#22C55E"/>
+  <rect x="672" y="352" width="96" height="18" rx="9" fill="#FFFFFF"/>
+  <rect x="672" y="412" width="96" height="18" rx="9" fill="#FFFFFF"/>
+  <path d="M596,540 a124,124 0 0 0 248,0" stroke="#22C55E" stroke-width="42" fill="none" stroke-linecap="round"/>
+  <rect x="698" y="664" width="44" height="60" fill="#22C55E"/>
+  <rect x="640" y="724" width="160" height="44" rx="22" fill="#22C55E"/>
+</svg>
